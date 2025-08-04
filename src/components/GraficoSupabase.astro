@@ -1,0 +1,48 @@
+---
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+
+let erro = null;
+let dadosJSON = "[]";
+
+try {
+  if (!supabaseUrl || !supabaseKey) throw new Error('Credenciais não encontradas');
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const { data, error: dbError } = await supabase.from('disponibilidades').select('farmacia, estoque');
+  if (dbError) throw new Error(dbError.message);
+  
+  const estoqueAgregado = data.reduce((acc, { farmacia, estoque }) => {
+    const nome = farmacia || 'Sem Nome';
+    const valor = parseFloat(estoque) || 0;
+    // Corrigindo o erro de tipagem que o VSCode apontou
+    acc[nome] = (acc[nome] || 0) + valor;
+    return acc;
+  }, {} as Record<string, number>); // Dica para o TypeScript sobre o tipo do objeto
+
+  const dadosParaGrafico = Object.entries(estoqueAgregado).map(([nome, total]) => ({ farmacia: nome, estoque: total }));
+  dadosJSON = JSON.stringify(dadosParaGrafico);
+} catch (e) {
+  erro = e.message;
+}
+---
+
+<div class="grafico-container">
+  <h3>Estoque Total (Dados do Supabase)</h3>
+  {erro && <p style="color: red;">ERRO: {erro}</p>}
+  <div id="grafico-supabase" style="width: 100%; height: 500px;" data-dados={dadosJSON}></div>
+</div>
+
+<script is:inline>
+  const chartContainer = document.getElementById('grafico-supabase');
+  if (chartContainer) {
+    const dados = JSON.parse(chartContainer.dataset.dados);
+    const farmacias = dados.map(item => item.farmacia);
+    const estoques = dados.map(item => item.estoque);
+
+    const myChart = echarts.init(chartContainer);
+    const option = { /* ... objeto de opção do ECharts ... */ };
+    myChart.setOption(option);
+  }
+</script>
