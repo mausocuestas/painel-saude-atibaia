@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Teste Mínimo de Gráfico">
+  <main>
+    <h1>Teste Mínimo do ECharts</h1>
+    <div id="grafico-minimo" style="width: 600px; height: 400px;"></div>
+  </main>
+</Layout>
+
+<script is:inline>
+  // Este script não é um módulo e tem acesso ao 'echarts' global
+  const chartDom = document.getElementById('grafico-minimo');
+  const myChart = echarts.init(chartDom);
+  const option = {
+    xAxis: { type: 'category', data: ['Seg', 'Ter', 'Qua'] },
+    yAxis: { type: 'value' },
+    series: [{ data: [120, 200, 150], type: 'bar' }]
+  };
+  myChart.setOption(option);
+</script>
