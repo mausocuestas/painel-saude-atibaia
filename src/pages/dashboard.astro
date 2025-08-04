@@ -1,0 +1,19 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GraficoSupabase from '../components/GraficoSupabase.astro';
+---
+<Layout title="Dashboard de Estoque">
+  <main>
+    <h1>Dashboard de Estoque da Farmácia</h1>
+    <p>Dados carregados diretamente do Supabase e renderizados com ECharts.</p>
+    
+    <hr>
+
+    <GraficoSupabase />
+  </main>
+</Layout>
+
+<style>
+  main { padding: 2rem; max-width: 1200px; margin: auto; }
+  hr { margin: 2rem 0; }
+</style>
