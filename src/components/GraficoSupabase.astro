@@ -1,4 +1,5 @@
 ---
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
@@ -24,14 +25,12 @@ try {
   const dadosParaGrafico = Object.entries(estoqueAgregado).map(([nome, total]) => ({ farmacia: nome, estoque: total }));
   dadosJSON = JSON.stringify(dadosParaGrafico);
 } catch (e) {
-  // Fazemos uma verificação para garantir que 'e' é um objeto de erro
   if (e instanceof Error) {
-    // Se for um Error podemos acessar 'e.message' com segurança  
   erro = e.message;
   } else {
-    // Se for outra coisa convertemos para string de forma segura
     erro = String(e);
 }
+
 ---
 
 <div class="grafico-container">
