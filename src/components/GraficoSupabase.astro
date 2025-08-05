@@ -26,10 +26,10 @@ try {
 } catch (e) {
   // Fazemos uma verificação para garantir que 'e' é um objeto de erro
   if (e instanceof Error) {
-    // Se for um Error, podemos acessar 'e.message' com segurança  
+    // Se for um Error podemos acessar 'e.message' com segurança  
   erro = e.message;
   } else {
-    // Se for outra coisa, convertemos para string de forma segura
+    // Se for outra coisa convertemos para string de forma segura
     erro = String(e);
 }
 ---
