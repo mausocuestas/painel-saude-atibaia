@@ -1,0 +1,21 @@
+---
+// Este componente recebe um título como propriedade
+const { title } = Astro.props;
+---
+<!-- O card em si: fundo branco, bordas arredondadas, sombra -->
+<div class="bg-white overflow-hidden shadow rounded-lg">
+  
+  <!-- O cabeçalho do card -->
+  <div class="px-4 py-5 sm:px-6">
+    <h3 class="text-base font-semibold leading-6 text-gray-900">
+      {title}
+    </h3>
+  </div>
+
+  <!-- A área de conteúdo do card, com uma borda superior -->
+  <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+    <!-- O 'slot' é onde o conteúdo (nosso gráfico) será inserido -->
+    <slot />
+  </div>
+
+</div>

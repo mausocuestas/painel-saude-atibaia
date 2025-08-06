@@ -1,19 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Card from '../components/ui/Card.astro';
 import GraficoSupabase from '../components/GraficoSupabase.astro';
 ---
-<Layout title="Dashboard de Estoque">
-  <main>
-    <h1>Dashboard de Estoque da Farmácia</h1>
-    <p>Dados carregados diretamente do Supabase e renderizados com ECharts.</p>
-    
-    <hr>
 
+<Layout title="Dashboard Geral">
+  
+  <!-- Título da Página -->
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-800">Visão Geral do Estoque</h2>
+    <p class="text-gray-500">Dados atualizados sobre a disponibilidade de itens nas farmácias.</p>
+  </div>
+  
+  <!-- Nosso gráfico agora vive dentro de um card! -->
+  <Card title="Estoque Total por Farmácia">
     <GraficoSupabase />
-  </main>
-</Layout>
+  </Card>
 
-<style>
-  main { padding: 2rem; max-width: 1200px; margin: auto; }
-  hr { margin: 2rem 0; }
-</style>
+  <!-- No futuro, você pode adicionar mais cards aqui -->
+  <!-- 
+  <div class="mt-8">
+    <Card title="Outro Gráfico ou Tabela">
+      <p>Aqui viria outro componente.</p>
+    </Card>
+  </div> 
+  -->
+
+</Layout>
