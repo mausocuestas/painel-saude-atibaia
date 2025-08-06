@@ -6,6 +6,7 @@ async function renderizarGrafico() {
   const chartContainer = document.getElementById('grafico-supabase');
   if (!chartContainer) return;
 
+    // Conexão com o supabase
   try {
     // Pegamos as credenciais que o Astro colocou no HTML
     const supabaseUrl = chartContainer.dataset.url;
@@ -16,19 +17,17 @@ async function renderizarGrafico() {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data, error } = await supabase.from('disponibilidades').select('farmacia, estoque');
+    // const { data, error } = await supabase.from('disponibilidades').select('farmacia, estoque').range(0, 2000); // Tenta buscar até 5001 linhas (de 0 a 5000);
+    // A query agora é muito mais simples e direta!
+    const { data, error } = await supabase
+      .from('view_estoque_total_por_farmacia') // <-- Usando a nova VIEW!
+      .select('farmacia, estoque_total')
+      .order('estoque_total', { ascending: false }); // Já podemos ordenar aqui!
 
     if (error) throw error;
 
-    const estoqueAgregado = data.reduce((acc, { farmacia, estoque }) => {
-      const nome = farmacia || 'Sem Nome';
-      const valor = parseFloat(estoque) || 0;
-      acc[nome] = (acc[nome] || 0) + valor;
-      return acc;
-    }, {});
-
-    const farmacias = Object.keys(estoqueAgregado);
-    const estoques = Object.values(estoqueAgregado);
+    const farmacias = data.map(item => item.farmacia);
+    const estoques = data.map(item => item.estoque_total);
 
     const myChart = echarts.init(chartContainer);
     const option = {
