@@ -1,50 +1,64 @@
 import { createClient } from '@supabase/supabase-js';
 import * as echarts from 'echarts';
 
-// Esta função será chamada pelo nosso componente Astro
-async function renderizarGrafico() {
-  const chartContainer = document.getElementById('grafico-supabase');
+const chartContainer = document.getElementById('grafico-supabase');
+// Precisamos das credenciais aqui para fazer novas buscas
+const supabaseUrl = chartContainer.dataset.url;
+const supabaseKey = chartContainer.dataset.key;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Guardamos a instância do gráfico para poder atualizá-la
+let myChart; 
+
+// A função principal agora aceita um filtro
+async function renderizarGrafico(filtroFarmacia = 'todas') {
   if (!chartContainer) return;
+  
+  // Mostra um indicador de carregamento
+  myChart?.showLoading();
 
-    // Conexão com o supabase
   try {
-    // Pegamos as credenciais que o Astro colocou no HTML
-    const supabaseUrl = chartContainer.dataset.url;
-    const supabaseKey = chartContainer.dataset.key;
+    // Construímos a query dinamicamente
+    let query = supabase.from('view_estoque_total_por_farmacia').select('farmacia, estoque_total');
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Credenciais Supabase não encontradas no HTML.');
+    // Se uma farmácia específica foi selecionada, adicionamos um filtro '.eq()'
+    if (filtroFarmacia !== 'todas') {
+      query = query.eq('farmacia', filtroFarmacia);
     }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    // const { data, error } = await supabase.from('disponibilidades').select('farmacia, estoque').range(0, 2000); // Tenta buscar até 5001 linhas (de 0 a 5000);
-    // A query agora é muito mais simples e direta!
-    const { data, error } = await supabase
-      .from('view_estoque_total_por_farmacia') // <-- Usando a nova VIEW!
-      .select('farmacia, estoque_total')
-      .order('estoque_total', { ascending: false }); // Já podemos ordenar aqui!
+    
+    const { data, error } = await query.order('estoque_total', { ascending: false });
 
     if (error) throw error;
-
+    
     const farmacias = data.map(item => item.farmacia);
     const estoques = data.map(item => item.estoque_total);
 
-    const myChart = echarts.init(chartContainer);
-    const option = {
-        title: { text: 'Estoque Total por Farmácia' },
-        tooltip: { trigger: 'axis' },
-        xAxis: { type: 'category', data: farmacias, axisLabel: { rotate: 30, interval: 0 } },
-        yAxis: { type: 'value' },
-        series: [{ type: 'bar', data: estoques, label: { show: true, position: 'top' } }],
-        grid: { containLabel: true, bottom: '20%' }
-    };
-    myChart.setOption(option);
+    // Se o gráfico ainda não foi criado, o inicializamos
+    if (!myChart) {
+      myChart = echarts.init(chartContainer);
+    }
+
+    // Atualizamos o gráfico com os novos dados
+    myChart.setOption({
+      xAxis: { data: farmacias },
+      series: [{ data: estoques }]
+    });
 
   } catch (e) {
-    chartContainer.innerHTML = `<p style="color:red;">Erro ao renderizar gráfico: ${e.message}</p>`;
-    console.error(e);
+    chartContainer.innerHTML = `<p style="color:red;">Erro: ${e.message}</p>`;
+  } finally {
+    // Esconde o indicador de carregamento
+    myChart?.hideLoading();
   }
 }
 
-// Executamos a função
+// 3. O "Ouvido" do Gráfico: Escutamos pelo anúncio do filtro
+window.addEventListener('filtrarFarmacia', (event) => {
+  const farmacia = event.detail.farmacia;
+  console.log(`Gráfico ouviu o filtro. Buscando dados para: ${farmacia}`);
+  // Chamamos a função de renderização, passando o novo filtro
+  renderizarGrafico(farmacia);
+});
+
+// Primeira Carga: Renderizamos o gráfico com "todas" as farmácias
 renderizarGrafico();

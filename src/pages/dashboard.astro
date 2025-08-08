@@ -2,28 +2,55 @@
 import Layout from '../layouts/Layout.astro';
 import Card from '../components/ui/Card.astro';
 import GraficoSupabase from '../components/GraficoSupabase.astro';
+
+// Importamos o cliente Supabase aqui também
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+
+let farmacias = [];
+try {
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  // Usamos a nossa VIEW para pegar a lista de farmácias únicas!
+  const { data, error } = await supabase
+    .from('view_estoque_total_por_farmacia')
+    .select('farmacia');
+  
+  if (error) throw error;
+  
+  // Extraímos apenas os nomes e ordenamos alfabeticamente
+  farmacias = data.map(item => item.farmacia).sort();
+} catch (e) {
+    let errorMessage = "Ocorreu um erro desconhecido";
+  if (e instanceof Error) {
+    errorMessage = e.message;
+  console.error("Erro ao buscar lista de farmácias:", e.message);
+}
+}
 ---
 
 <Layout title="Dashboard Geral">
-  
-  <!-- Título da Página -->
   <div class="mb-8">
     <h2 class="text-2xl font-bold text-gray-800">Visão Geral do Estoque</h2>
-    <p class="text-gray-500">Dados atualizados sobre a disponibilidade de itens nas farmácias.</p>
+    <p class="text-gray-500">Dados atualizados sobre a disponibilidade.</p>
   </div>
   
-  <!-- Nosso gráfico agora vive dentro de um card! -->
+  <div class="mb-6 max-w-xs">
+    <label for="farmacia-filtro" class="block text-sm font-medium leading-6 text-gray-900">Filtrar por Farmácia</label>
+    <select id="farmacia-filtro" name="farmacia-filtro" class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+      <option value="todas">Todas as Farmácias</option>
+      {farmacias.map(nome => (
+        <option value={nome}>{nome}</option>
+      ))}
+    </select>
+  </div>
+  <!-- O card do gráfico continua o mesmo -->
   <Card title="Estoque Total por Farmácia">
     <GraficoSupabase />
   </Card>
 
-  <!-- No futuro, você pode adicionar mais cards aqui -->
-  <!-- 
-  <div class="mt-8">
-    <Card title="Outro Gráfico ou Tabela">
-      <p>Aqui viria outro componente.</p>
-    </Card>
-  </div> 
-  -->
+  <!-- Carregamos um NOVO script que controlará a lógica do filtro -->
+  <script src="../scripts/filtroDashboard.js"></script>
 
 </Layout>
