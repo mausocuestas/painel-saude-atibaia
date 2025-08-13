@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/svelte": "^7.1.0",
     "@astrojs/tailwind": "^5.1.5",
     "@supabase/supabase-js": "^2.43.4",
     "astro": "^5.12.8",
